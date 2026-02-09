@@ -1,82 +1,116 @@
-
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Helper Functions ---
-
-    function signedIn() {
+    function isSignedIn() {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return signedIn() && request.auth.uid == userId;
+    function isOwner() {
+      return isSignedIn() && resource.data.organizerId == request.auth.uid;
     }
 
-    // Robust Admin Check
-    // Checks if the user doc exists and has role == 'admin'
-    function isAdmin() {
-      return request.auth != null
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    function isCreatingOwner() {
+      return isSignedIn() && request.resource.data.organizerId == request.auth.uid;
     }
 
-    // --- Global Admin Access ---
-    // Admins have full read/write access to everything by default
-    match /{document=**} {
-      allow read, write: if isAdmin();
+    function nonEmptyString(field) {
+      return (field is string) && field.size() > 0 && field.size() <= 2000;
     }
 
-    // --- Specific Collection Rules ---
-
-    // 1. Users (Profiles)
-    match /users/{userId} {
-      // Public read for profiles (required for "View Public Profile" feature)
-      allow read: if true;
-      
-      // Write: Only the owner OR an Admin
-      allow write: if isOwner(userId) || isAdmin();
-
-      match /{document=**} {
-        allow read, write: if isOwner(userId) || isAdmin();
-      }
+    function validStatus(s) {
+      return s in ["active", "draft", "archived"];
     }
 
-    // 2. Instructors (Public Discovery, Restricted Write)
-    // Corresponds to "Guides" in the UI
-    match /instructors/{instructorId} {
-      allow read: if true;
-
-      // Create: Admin OR (Signed in user claiming ownership)
-      allow create: if isAdmin() || (signedIn()
-        && request.resource.data.ownerId == request.auth.uid);
-
-      // Update: Admin OR (Owner, ensuring they don't change the ownerId)
-      allow update: if isAdmin() || (signedIn()
-        && resource.data.ownerId == request.auth.uid
-        && request.resource.data.ownerId == resource.data.ownerId);
-
-      // Delete: Admin OR Owner
-      allow delete: if isAdmin() || (signedIn()
-        && resource.data.ownerId == request.auth.uid);
+    function validVisibility(v) {
+      return v in ["public", "private"];
     }
 
-    // 3. Retreats (Public Discovery, Restricted Write)
+    function isPublicActive() {
+      return resource.data.status == "active" && resource.data.visibility == "public";
+    }
+
+    // Allow only these fields in retreat documents (prevents junk/unexpected fields)
+    function retreatAllowedKeys() {
+      return [
+        "title",
+        "subtitle",
+        "description",
+        "location",
+        "startDate",
+        "endDate",
+        "price",
+        "imageUrl",
+        "organizerId",
+        "organizerName",
+        "status",
+        "visibility",
+        "createdAt",
+        "updatedAt"
+      ];
+    }
+
     match /retreats/{retreatId} {
-      allow read: if true;
 
-      // Create: Admin OR (Signed in user claiming ownership)
-      allow create: if isAdmin() || (signedIn()
-        && request.resource.data.ownerId == request.auth.uid);
+      // READ:
+      // - Everyone can read only active+public retreats
+      // - Owner can read their own retreats (including draft/private)
+      allow get, list: if isPublicActive() || isOwner();
 
-      // Update: Admin OR (Owner, ensuring they don't change the ownerId)
-      allow update: if isAdmin() || (signedIn()
-        && resource.data.ownerId == request.auth.uid
-        && request.resource.data.ownerId == resource.data.ownerId);
+      // CREATE:
+      // - Only signed-in users
+      // - organizerId must be auth.uid
+      // - validate main fields
+      // - status/visibility must be valid
+      // - limit fields to allowed keys
+      allow create: if isCreatingOwner()
+        && request.resource.data.keys().hasOnly(retreatAllowedKeys())
+        && nonEmptyString(request.resource.data.title)
+        && nonEmptyString(request.resource.data.description)
+        && nonEmptyString(request.resource.data.location)
+        // startDate/endDate can be string OR timestamp (accept both)
+        && (
+          (request.resource.data.startDate is string && request.resource.data.startDate.size() > 0) ||
+          (request.resource.data.startDate is timestamp)
+        )
+        && (
+          (request.resource.data.endDate is string && request.resource.data.endDate.size() > 0) ||
+          (request.resource.data.endDate is timestamp)
+        )
+        && validStatus(request.resource.data.status)
+        && validVisibility(request.resource.data.visibility);
 
-      // Delete: Admin OR Owner
-      allow delete: if isAdmin() || (signedIn()
-        && resource.data.ownerId == request.auth.uid);
+      // UPDATE:
+      // - Only owner
+      // - organizerId cannot be changed
+      // - validate status/visibility (if present)
+      // - keep keys restricted
+      allow update: if isOwner()
+        && request.resource.data.keys().hasOnly(retreatAllowedKeys())
+        && request.resource.data.organizerId == resource.data.organizerId
+        && nonEmptyString(request.resource.data.title)
+        && nonEmptyString(request.resource.data.description)
+        && nonEmptyString(request.resource.data.location)
+        && (
+          (request.resource.data.startDate is string && request.resource.data.startDate.size() > 0) ||
+          (request.resource.data.startDate is timestamp)
+        )
+        && (
+          (request.resource.data.endDate is string && request.resource.data.endDate.size() > 0) ||
+          (request.resource.data.endDate is timestamp)
+        )
+        && validStatus(request.resource.data.status)
+        && validVisibility(request.resource.data.visibility);
+
+      // DELETE:
+      // - Only owner
+      allow delete: if isOwner();
+    }
+
+    // (Optional) Lock down everything else by default
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
