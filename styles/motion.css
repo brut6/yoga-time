@@ -1,0 +1,81 @@
+
+:root {
+  /* Zen Motion Curve - Soft, confident, expensive */
+  --ease-zen: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-short: 0.3s;
+  --duration-medium: 0.6s;
+}
+
+/* 1. Page Fade In */
+@keyframes fadeInSoft {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeScaleIn {
+  0% { opacity: 0; transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.app-main > * {
+  animation: fadeInSoft var(--duration-medium) var(--ease-zen) forwards;
+  will-change: opacity, transform;
+}
+
+/* 2. Staggered List Entrance */
+.stagger-appear > * {
+  opacity: 0;
+  animation: fadeInSoft 0.8s var(--ease-zen) forwards;
+}
+
+.stagger-appear > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-appear > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-appear > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-appear > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-appear > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-appear > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-appear > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-appear > *:nth-child(8) { animation-delay: 0.4s; }
+
+/* 3. Micro-interactions */
+button, 
+.luxury-card, 
+.vibe-chip,
+a {
+  transition: transform 0.25s var(--ease-zen),
+              background-color 0.25s ease,
+              box-shadow 0.25s ease,
+              opacity 0.25s ease !important;
+}
+
+/* Gentle Press Effect */
+button:active, 
+.luxury-card:active,
+.btn-primary:active,
+.btn-secondary:active {
+  transform: scale(0.98) !important;
+}
+
+/* Bottom Nav Micro-animations */
+.bottom-nav-item svg {
+  transition: transform 0.4s var(--ease-zen);
+}
+
+.bottom-nav-item.active svg {
+  transform: translateY(-2px);
+}
+
+/* Modal Slide In */
+.modal-enter {
+  animation: fadeScaleIn 0.4s var(--ease-zen) forwards;
+}
+
+/* Accessibility: Reduce Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

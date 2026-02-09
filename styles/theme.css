@@ -1,0 +1,318 @@
+
+/* --- ZEN MINIMAL LUXURY SYSTEM --- */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
+
+:root {
+  /* --- PALETTE: Earth & Ether --- */
+  
+  /* Backgrounds */
+  --bg-main: #F5F3F0;        /* Warm Stone */
+  --bg-elevated: #FDFCFB;    /* Rice Paper */
+  --bg-card: #FFFFFF;        /* Pure White */
+  --bg-glass: rgba(245, 243, 240, 0.95); /* High opacity warm glass */
+
+  /* Text */
+  --text-1: #2F2F2F;         /* Soft Charcoal */
+  --text-2: #5D5D5D;         /* Neutral Grey */
+  --text-3: #9CA3AF;         /* Soft Stone Grey */
+  --text-inverse: #FFFFFF;
+
+  /* Accents - Organic */
+  --accent: #3E3834;         /* Dark Earth */
+  --gold-sand: #C9B2A0;      /* Muted Sand Gold */
+  --gold-light: #F2EBE6;     /* Pale Blush Sand */
+  
+  /* Borders & Lines */
+  --border: rgba(47, 47, 47, 0.08);       /* Editorial definition */
+  --border-strong: rgba(47, 47, 47, 0.15); 
+  --edge-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+
+  /* --- SHAPE & SPACE --- */
+  
+  /* Radius */
+  --radius-1: 12px;
+  --radius-2: 20px;          /* Standard Card */
+  --radius-3: 32px;          /* Large Surface */
+  --radius-pill: 999px;
+
+  /* Spacing Scale */
+  --s-1: 8px;
+  --s-2: 12px;
+  --s-3: 16px;
+  --s-4: 24px;
+  --s-5: 32px;
+  --s-6: 64px;
+  --s-7: 96px;
+
+  /* Shadows */
+  --shadow-1: 0 2px 10px rgba(0, 0, 0, 0.03);
+  --shadow-2: 0 12px 30px rgba(0, 0, 0, 0.05);
+  --shadow-soft: 0 8px 32px -8px rgba(188, 170, 164, 0.1); 
+  --shadow-gold: 0 16px 32px -8px rgba(201, 178, 160, 0.25);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04);
+
+  /* Typography */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Lora", serif;
+
+  /* Safe Area & Layout */
+  --bottom-nav-height: 80px; /* Fallback default */
+}
+
+/* --- GLOBAL RESET --- */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-main);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+a { 
+  text-decoration: none; 
+  color: inherit; 
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3, h4, p { margin: 0; }
+
+/* --- UTILITY CLASSES --- */
+
+/* Root Wrapper */
+.yt-app {
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Page Layout */
+.yt-page {
+  padding: 0 var(--s-3);
+  padding-top: var(--s-5); 
+  padding-bottom: 40px; /* Internal spacing, nav safe area handled by main */
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  z-index: 2;
+}
+
+/* Section Rhythm */
+.yt-section {
+  margin-bottom: var(--s-6);
+}
+
+.yt-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+/* Typography */
+.yt-h1 {
+  font-family: var(--font-serif);
+  font-size: 2.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text-1);
+  margin-bottom: var(--s-2);
+  line-height: 1.2;
+}
+
+.yt-h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--text-1);
+  margin-bottom: var(--s-3);
+  text-transform: none;
+}
+
+.yt-sub {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: var(--text-2);
+  font-weight: 400;
+  line-height: 1.6;
+  margin-bottom: var(--s-4);
+}
+
+.luxury-tag {
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 100px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Luxury Card - Base Definition */
+.yt-card, .luxury-card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-2);
+  border: 1px solid var(--border); 
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
+}
+
+.yt-card:active, .luxury-card:active {
+  transform: scale(0.99);
+}
+
+/* Buttons */
+.yt-btnPrimary, .btn-primary {
+  background-color: var(--text-1); 
+  color: #FFFFFF;
+  padding: 14px 32px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+}
+
+.yt-btnPrimary:active, .btn-primary:active {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
+/* Gold Button Variant */
+.btn-gold {
+  background: linear-gradient(135deg, #C9B2A0 0%, #BCAAA4 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: var(--shadow-gold) !important;
+  border: 1px solid rgba(255,255,255,0.2) !important;
+}
+
+.yt-btnSecondary, .btn-secondary {
+  background-color: transparent;
+  color: var(--text-1);
+  border: 1px solid var(--border-strong);
+  padding: 13px 32px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.yt-btnSecondary:active, .btn-secondary:active {
+  background-color: rgba(0,0,0,0.03);
+  transform: scale(0.98);
+}
+
+/* Tab Bar (Glass) */
+.yt-tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-glass);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+  height: calc(72px + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+  max-width: 600px; 
+  margin: 0 auto;
+}
+
+.yt-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--text-3);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  width: 64px;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.yt-tab svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 1.5px; 
+  stroke: currentColor;
+  transition: stroke 0.3s ease, transform 0.3s ease;
+}
+
+.yt-tab.active {
+  color: var(--text-1);
+}
+
+.yt-tab.active svg {
+  stroke-width: 2px;
+  transform: translateY(-2px);
+  color: var(--text-1);
+}
+
+/* Header */
+.yt-header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  margin-bottom: var(--s-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.yt-brand {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  color: var(--text-1);
+  font-weight: 600;
+}

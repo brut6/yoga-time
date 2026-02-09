@@ -1,0 +1,52 @@
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // --- Helper Functions ---
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    // Admin Check via Firestore
+    function isAdmin() {
+      return signedIn() && 
+        firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function under5MB() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // --- Path Rules ---
+
+    // 1. User Avatars
+    // Path: users/{uid}/avatar/{fileName}
+    match /users/{userId}/avatar/{fileName} {
+      allow read: if true;
+      allow write: if (isOwner(userId) || isAdmin()) && isImage() && under5MB();
+    }
+
+    // 2. Retreat/Guide Images
+    // Path: retreats/{retreatId}/{uid}/{fileName}
+    match /retreats/{retreatId}/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if (isOwner(userId) || isAdmin()) && isImage() && under5MB();
+    }
+    
+    // Default Deny (unless admin)
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
